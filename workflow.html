@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threenetra AI — Three Workflows</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0A0B14;
+    --surface: #10121F;
+    --surface2: #161929;
+    --border: rgba(255,255,255,0.07);
+    --women: #FF3D7F;
+    --women-glow: rgba(255,61,127,0.15);
+    --women-dim: #8B1A3E;
+    --child: #3D9EFF;
+    --child-glow: rgba(61,158,255,0.15);
+    --child-dim: #1A4A8B;
+    --risk: #FF8A00;
+    --risk-glow: rgba(255,138,0,0.15);
+    --risk-dim: #7A3F00;
+    --high: #FF3B30;
+    --med: #FF9500;
+    --low: #30D158;
+    --text: #E8EAF6;
+    --muted: #6B7499;
+    --accent: #A78BFA;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 32px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 72px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .trident { font-size: 18px; }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: white;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--women) 0%, var(--accent) 50%, var(--child) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  /* Workflow cards */
+  .workflow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .workflow:nth-child(1) { animation-delay: 0.1s; }
+  .workflow:nth-child(2) { animation-delay: 0.2s; }
+  .workflow:nth-child(3) { animation-delay: 0.3s; }
+
+  .workflow::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .workflow.women::before { background: linear-gradient(90deg, transparent, var(--women), transparent); }
+  .workflow.child::before  { background: linear-gradient(90deg, transparent, var(--child), transparent); }
+  .workflow.risk::before   { background: linear-gradient(90deg, transparent, var(--risk), transparent); }
+
+  .workflow-glow {
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .women .workflow-glow  { background: radial-gradient(circle, var(--women-glow), transparent 70%); }
+  .child .workflow-glow  { background: radial-gradient(circle, var(--child-glow), transparent 70%); }
+  .risk .workflow-glow   { background: radial-gradient(circle, var(--risk-glow), transparent 70%); }
+
+  .wf-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .wf-title-block {}
+
+  .wf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .women .wf-badge { background: var(--women-glow); border: 1px solid rgba(255,61,127,0.3); color: var(--women); }
+  .child .wf-badge  { background: var(--child-glow); border: 1px solid rgba(61,158,255,0.3); color: var(--child); }
+  .risk .wf-badge   { background: var(--risk-glow); border: 1px solid rgba(255,138,0,0.3); color: var(--risk); }
+
+  .wf-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.02em;
+  }
+
+  .wf-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  .wf-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .meta-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  /* Flow steps */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    position: relative;
+  }
+
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .women .step-num { background: var(--women-glow); border: 1px solid rgba(255,61,127,0.4); color: var(--women); }
+  .child .step-num  { background: var(--child-glow); border: 1px solid rgba(61,158,255,0.4); color: var(--child); }
+  .risk .step-num   { background: var(--risk-glow); border: 1px solid rgba(255,138,0,0.4); color: var(--risk); }
+
+  .step-line {
+    width: 1px;
+    flex: 1;
+    min-height: 24px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .step:last-child .step-line { display: none; }
+
+  .step-body {
+    padding-bottom: 28px;
+  }
+
+  .step:last-child .step-body { padding-bottom: 0; }
+
+  .step-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .step-icon { font-size: 16px; }
+
+  .step-detail {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .step-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface2);
+    letter-spacing: 0.04em;
+  }
+
+  /* Branch block */
+  .branch-row {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    margin-top: -4px;
+  }
+
+  .branches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding-bottom: 28px;
+  }
+
+  .branch {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .branch::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .branch.low::before   { background: var(--low); }
+  .branch.med::before   { background: var(--med); }
+  .branch.high::before  { background: var(--high); }
+
+  .branch-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .branch.low .branch-label   { color: var(--low); }
+  .branch.med .branch-label   { color: var(--med); }
+  .branch.high .branch-label  { color: var(--high); }
+
+  .branch-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+  }
+
+  .branch-detail {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Emergency block */
+  .emergency-block {
+    background: rgba(255,59,48,0.08);
+    border: 1px solid rgba(255,59,48,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    margin-bottom: 28px;
+  }
+
+  .emergency-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--high);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .emergency-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .ea {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .ea-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--high);
+    flex-shrink: 0;
+  }
+
+  /* Divider line between workflows */
+  .wf-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 12px 0 40px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-top: 48px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+  }
+
+  /* Connector arrow between steps */
+  .connector {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 64px;
+    margin: -8px 0 0;
+    height: 20px;
+  }
+
+  .connector-line {
+    width: 1px;
+    height: 100%;
+    background: var(--border);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .branches { grid-template-columns: 1fr; }
+    .emergency-actions { grid-template-columns: 1fr; }
+    .wf-header { flex-direction: column; }
+    .wf-meta { align-items: flex-start; }
+    .workflow { padding: 28px 20px; }
+    .container { padding: 40px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <span class="trident">🔱</span>
+      Threenetra AI &nbsp;·&nbsp; System Workflows
+    </div>
+    <h1>Three <span>Core Workflows</span></h1>
+    <p class="subtitle">Women Safety · Child Safety · Risk Engine — complete flow from input to action</p>
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- WORKFLOW 1: WOMEN SAFETY MODE      -->
+  <!-- ══════════════════════════════════ -->
+  <div class="workflow women">
+    <div class="workflow-glow"></div>
+    <div class="wf-header">
+      <div class="wf-title-block">
+        <div class="wf-badge">👩 Workflow 01</div>
+        <div class="wf-title">Women Safety Mode</div>
+        <div class="wf-desc">Self-driven · Continuous monitoring · Auto emergency trigger</div>
+      </div>
+      <div class="wf-meta">
+        <div class="meta-chip">flutter_background_service</div>
+        <div class="meta-chip">Supabase Realtime</div>
+        <div class="meta-chip">FCM + Native SMS</div>
+      </div>
+    </div>
+
+    <div class="flow">
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">01</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📱</span> App Launch + Auth</div>
+          <div class="step-detail">User opens Threenetra AI. Supabase anonymous or phone auth. Mode selection screen appears. User selects <strong style="color:var(--women)">Women Safety Mode</strong>.</div>
+          <div class="step-tags">
+            <span class="tag">supabase_auth</span>
+            <span class="tag">flutter_dotenv</span>
+            <span class="tag">riverpod</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">02</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🛡️</span> Permission Grant</div>
+          <div class="step-detail">System requests: Location (foreground + background), Microphone, SMS, Contacts. Uses <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">permission_handler</code>. Graceful degradation if partial permissions granted.</div>
+          <div class="step-tags">
+            <span class="tag">location</span>
+            <span class="tag">microphone</span>
+            <span class="tag">sms</span>
+            <span class="tag">contacts</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">03</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">⚙️</span> Add Trusted Contacts</div>
+          <div class="step-detail">User adds up to 5 trusted contacts (phone numbers). Stored in Supabase <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">contacts</code> table linked to user_id. Contacts receive SMS + FCM on emergency.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">04</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">▶️</span> Activate Safety Mode</div>
+          <div class="step-detail">User taps the large <strong style="color:var(--women)">Activate</strong> button. Background service starts (flutter_background_service). GPS polling begins every 30s. Motion sensor stream opens via sensors_plus. Risk evaluation loop initializes.</div>
+          <div class="step-tags">
+            <span class="tag">background_service</span>
+            <span class="tag">geolocator</span>
+            <span class="tag">sensors_plus</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">05</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📡</span> Continuous Monitoring Loop</div>
+          <div class="step-detail">Every 30 seconds: collect GPS coordinates + speed, read accelerometer variance, check current hour (isNight if 21:00–05:00), fetch crowd score from Supabase heatmap, pass all data to RiskEngine.evaluate(). Location logged to Supabase <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">location_logs</code>.</div>
+          <div class="step-tags">
+            <span class="tag">RiskEngine</span>
+            <span class="tag">LocationService</span>
+            <span class="tag">MotionService</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">06</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">⚡</span> Risk Level Output</div>
+          <div class="step-detail">Risk Engine returns LOW / MEDIUM / HIGH with a human-readable reason string (explainability). Dashboard updates in real-time via Riverpod state. AI tip card fetched from Gemini free tier when MEDIUM+.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Branch: outcomes by risk level -->
+    <div class="branch-row">
+      <div></div>
+      <div class="branches">
+        <div class="branch low">
+          <div class="branch-label">● Low Risk</div>
+          <div class="branch-title">Continue & Monitor</div>
+          <div class="branch-detail">Loop continues every 30s. Green status on dashboard. No alerts sent.</div>
+        </div>
+        <div class="branch med">
+          <div class="branch-label">● Medium Risk</div>
+          <div class="branch-title">Warn + AI Tip</div>
+          <div class="branch-detail">Push notification to user. Amber dashboard. AI safety tip card shown. Contacts NOT alerted yet.</div>
+        </div>
+        <div class="branch high">
+          <div class="branch-label">● High Risk</div>
+          <div class="branch-title">Emergency Trigger</div>
+          <div class="branch-detail">Immediate auto-trigger of full emergency action engine. No user action needed.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency block -->
+    <div style="grid-column: 2; padding-left: 64px; margin-top: -8px;">
+      <div class="emergency-block">
+        <div class="emergency-title">🆘 Emergency Action Engine (HIGH Risk)</div>
+        <div class="emergency-actions">
+          <div class="ea"><div class="ea-dot"></div>Send SOS SMS + maps.google.com location link to all trusted contacts</div>
+          <div class="ea"><div class="ea-dot"></div>Start audio recording in background (AudioService, saved as .m4a locally)</div>
+          <div class="ea"><div class="ea-dot"></div>Send FCM push notification to trusted contacts' devices</div>
+          <div class="ea"><div class="ea-dot"></div>Log alert to Supabase alerts table with lat, lng, reason, audio_url</div>
+          <div class="ea"><div class="ea-dot"></div>Optional: trigger phone call intent to primary contact</div>
+          <div class="ea"><div class="ea-dot"></div>Works fully offline — SMS fires even without internet connection</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">07</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🤫</span> Shake-to-SOS (Hackathon Feature)</div>
+          <div class="step-detail">Accelerometer detects 3× sharp shake pattern from lock screen. Immediately fires emergency engine without unlocking phone. Implemented via background service accelerometer stream + debounce logic.</div>
+          <div class="step-tags">
+            <span class="tag">MotionService</span>
+            <span class="tag">sensors_plus</span>
+            <span class="tag">background_isolate</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">08</div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">✅</span> Resolution + Safety Journal</div>
+          <div class="step-detail">User marks alert resolved. Audio uploaded to Supabase Storage if internet available. Incident auto-logged to Safety Journal with timestamp, location, reason. Exportable as PDF for legal use.</div>
+          <div class="step-tags">
+            <span class="tag">supabase_storage</span>
+            <span class="tag">incident_log</span>
+            <span class="tag">pdf_export</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- WORKFLOW 2: CHILD SAFETY MODE      -->
+  <!-- ══════════════════════════════════ -->
+  <div class="workflow child">
+    <div class="workflow-glow"></div>
+    <div class="wf-header">
+      <div class="wf-title-block">
+        <div class="wf-badge">🧒 Workflow 02</div>
+        <div class="wf-title">Child Safety Mode</div>
+        <div class="wf-desc">Parent-controlled · Geo-fencing · Live tracking · Inactivity detection</div>
+      </div>
+      <div class="wf-meta">
+        <div class="meta-chip">Supabase Realtime WS</div>
+        <div class="meta-chip">OpenStreetMap / flutter_map</div>
+        <div class="meta-chip">GeoFenceService</div>
+      </div>
+    </div>
+
+    <div class="flow">
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">01</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">👨‍👩‍👧</span> Parent Setup (One-time)</div>
+          <div class="step-detail">Parent installs Threenetra on their device, selects <strong style="color:var(--child)">Child Safety Mode</strong>. Creates child profile. Installs Threenetra on child's device and links via a 6-digit pairing code stored in Supabase.</div>
+          <div class="step-tags">
+            <span class="tag">users_table</span>
+            <span class="tag">pairing_code</span>
+            <span class="tag">supabase_auth</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">02</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🗺️</span> Draw Safe Zones (Geo-fences)</div>
+          <div class="step-detail">Parent opens Parent Dashboard (OSM map). Taps to draw geo-fence circles (e.g. home radius 200m, school 150m). Zones saved to Supabase <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">geofences</code> table. Active/inactive toggle per zone. Displayed as filled polygons on flutter_map.</div>
+          <div class="step-tags">
+            <span class="tag">GeoFenceService</span>
+            <span class="tag">flutter_map</span>
+            <span class="tag">openstreetmap</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">03</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📡</span> Child Device: Live Tracking</div>
+          <div class="step-detail">Child's phone runs background GPS every 30s. Location pushed to Supabase Realtime channel. Parent dashboard subscribes to realtime stream — child's location marker updates live on OSM map without refresh.</div>
+          <div class="step-tags">
+            <span class="tag">location_logs</span>
+            <span class="tag">supabase_realtime</span>
+            <span class="tag">websocket</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">04</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🔍</span> Geo-fence Breach Check</div>
+          <div class="step-detail">On each GPS update, GeoFenceService computes Haversine distance from child's position to each active zone center. If distance &gt; zone radius → breach detected. Breach creates an alert record with child_user_id, zone_id, lat, lng.</div>
+          <div class="step-tags">
+            <span class="tag">haversine</span>
+            <span class="tag">GeoFenceService</span>
+            <span class="tag">alerts_table</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">05</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">😴</span> Inactivity Detection</div>
+          <div class="step-detail">Motion service monitors accelerometer variance on child's device. If child has not moved significantly for &gt;30 min AND is not in a known safe zone → Risk Engine returns MEDIUM with reason "Child inactive too long". Parent alerted immediately.</div>
+          <div class="step-tags">
+            <span class="tag">MotionService</span>
+            <span class="tag">RiskEngine</span>
+            <span class="tag">threshold_30min</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Branch: outcomes -->
+    <div class="branch-row">
+      <div></div>
+      <div class="branches">
+        <div class="branch low">
+          <div class="branch-label">● Inside Zone</div>
+          <div class="branch-title">All Safe</div>
+          <div class="branch-detail">Child is inside a safe zone and active. Green status on parent dashboard.</div>
+        </div>
+        <div class="branch med">
+          <div class="branch-label">● Inactivity / Unknown Area</div>
+          <div class="branch-title">Alert Parent</div>
+          <div class="branch-detail">FCM push to parent. "Check on your child" notification with last known location.</div>
+        </div>
+        <div class="branch high">
+          <div class="branch-label">● Geo-fence Breach</div>
+          <div class="branch-title">Immediate Alert</div>
+          <div class="branch-detail">FCM push + SMS to parent. Deeplink opens Parent Dashboard to exact breach point on map.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow" style="margin-top: 28px;">
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">06</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🔔</span> Parent Receives Alert</div>
+          <div class="step-detail">FCM push with data payload: child name, alert type, coordinates. Tapping notification deep-links to Parent Dashboard map view. Community safety heatmap overlay shows crowd safety of breach area. Supabase Edge Function triggers FCM automatically on new HIGH alert insert.</div>
+          <div class="step-tags">
+            <span class="tag">FCM</span>
+            <span class="tag">EdgeFunction</span>
+            <span class="tag">deep_link</span>
+            <span class="tag">heatmap</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">07</div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📊</span> Activity Feed + History</div>
+          <div class="step-detail">Parent dashboard shows full child activity timeline: check-ins, movement patterns, alerts, zone entries/exits. All persisted in Supabase alerts + location_logs. Exportable for school/guardian records.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- WORKFLOW 3: RISK ENGINE            -->
+  <!-- ══════════════════════════════════ -->
+  <div class="workflow risk">
+    <div class="workflow-glow"></div>
+    <div class="wf-header">
+      <div class="wf-title-block">
+        <div class="wf-badge">⚡ Workflow 03</div>
+        <div class="wf-title">Risk Engine Pipeline</div>
+        <div class="wf-desc">Rule-based v1 · TFLite-ready v2 · Explainable output · Both modes feed this</div>
+      </div>
+      <div class="wf-meta">
+        <div class="meta-chip">Pure Dart module</div>
+        <div class="meta-chip">TFLite slot ready</div>
+        <div class="meta-chip">Gemini AI tips</div>
+      </div>
+    </div>
+
+    <div class="flow">
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">01</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📥</span> Input Collection (RiskInput)</div>
+          <div class="step-detail">Background service assembles a <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">RiskInput</code> object every 30 seconds containing: lat, lng, speed (m/s), currentHour (0–23), motionVariance (from accelerometer), crowdScore (0.0–1.0 from heatmap), inactivityMinutes, appMode (women | child).</div>
+          <div class="step-tags">
+            <span class="tag">LocationService</span>
+            <span class="tag">MotionService</span>
+            <span class="tag">CrowdSafetyService</span>
+            <span class="tag">RiskInput</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">02</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🧠</span> Rule Evaluation (v1 — Active)</div>
+          <div class="step-detail">
+            Rules evaluated in priority order:<br><br>
+            <code style="color:#FF8A00;font-family:'DM Mono',monospace;font-size:12px">IF isNight AND speed &gt; 15 → HIGH "Fast movement at night"</code><br>
+            <code style="color:#FF8A00;font-family:'DM Mono',monospace;font-size:12px">IF crowdScore &lt; 0.2 → MEDIUM "Isolated area"</code><br>
+            <code style="color:#FF8A00;font-family:'DM Mono',monospace;font-size:12px">IF mode==child AND inactivity &gt; 30min → MEDIUM "Inactive too long"</code><br>
+            <code style="color:#30D158;font-family:'DM Mono',monospace;font-size:12px">ELSE → LOW "All clear"</code>
+          </div>
+          <div class="step-tags">
+            <span class="tag">RiskEngine.evaluate()</span>
+            <span class="tag">pure_dart</span>
+            <span class="tag">unit_testable</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">03</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🤖</span> TFLite Slot (v2 — Future)</div>
+          <div class="step-detail">The <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">evaluate()</code> method body is swappable. v2 replaces rules with TFLite model inference. Input tensor: <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">[lat, lng, speed, hour, crowdScore, motionVariance]</code>. Output tensor: <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">[riskLevel(0-2), confidence]</code>. Same RiskResult interface — no upstream code changes needed.</div>
+          <div class="step-tags">
+            <span class="tag">tflite_flutter</span>
+            <span class="tag">model.tflite</span>
+            <span class="tag">same_interface</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">04</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📤</span> RiskResult Output</div>
+          <div class="step-detail">Returns a typed <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">RiskResult(level: RiskLevel.HIGH, reason: "...")</code>. Reason string shown on dashboard for explainability and transparency. Riverpod provider notifies UI. AlertEngine.dispatch(result) called next.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">05</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">💡</span> AI Tip Fetch (MEDIUM+)</div>
+          <div class="step-detail">If risk ≥ MEDIUM, AITipService sends a context-aware prompt to Gemini free tier API: mode, time, crowdScore, and risk reason are included. Response parsed and displayed as a non-intrusive card. Cached locally to avoid repeat API calls for same context. Falls back to a local tip bank if offline.</div>
+          <div class="step-tags">
+            <span class="tag">AITipService</span>
+            <span class="tag">gemini_free_api</span>
+            <span class="tag">hive_cache</span>
+            <span class="tag">offline_fallback</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Branch: outputs per level -->
+    <div class="branch-row">
+      <div></div>
+      <div class="branches">
+        <div class="branch low">
+          <div class="branch-label">● Low</div>
+          <div class="branch-title">Silent Continue</div>
+          <div class="branch-detail">No notifications. Dashboard stays green. Loop repeats in 30s.</div>
+        </div>
+        <div class="branch med">
+          <div class="branch-label">● Medium</div>
+          <div class="branch-title">Warn + AI Tip</div>
+          <div class="branch-detail">Local push + dashboard amber. AI tip card. No emergency actions yet.</div>
+        </div>
+        <div class="branch high">
+          <div class="branch-label">● High</div>
+          <div class="branch-title">Emergency Engine</div>
+          <div class="branch-detail">Full SOS chain fires: SMS, FCM, audio record, Supabase log.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow" style="margin-top: 28px;">
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">06</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">🗺️</span> Community Heatmap Feed-in</div>
+          <div class="step-detail">CrowdSafetyService converts current GPS to H3 hex index (resolution 9). Queries Supabase <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">safety_ratings</code> table for average rating of that hex. Normalizes to 0.0–1.0 → crowdScore. This directly feeds into Risk Engine as an input, creating a community-powered risk signal.</div>
+          <div class="step-tags">
+            <span class="tag">H3_hex_grid</span>
+            <span class="tag">CrowdSafetyService</span>
+            <span class="tag">anonymous_ratings</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">07</div>
+        </div>
+        <div class="step-body">
+          <div class="step-name"><span class="step-icon">📋</span> Audit + Safety Journal</div>
+          <div class="step-detail">Every RiskResult ≥ MEDIUM is persisted to Supabase <code style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px">alerts</code> with full context: level, reason, lat, lng, timestamp, audio_url. Users view full incident timeline in Safety Journal. Exportable as PDF for police reports or legal evidence. Loop restarts in 30s.</div>
+          <div class="step-tags">
+            <span class="tag">alerts_table</span>
+            <span class="tag">incident_log</span>
+            <span class="tag">pdf_export</span>
+            <span class="tag">loop_30s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--women)"></div>Women Mode</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--child)"></div>Child Mode</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--risk)"></div>Risk Engine</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--high)"></div>HIGH alert</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--med)"></div>MEDIUM alert</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--low)"></div>LOW / Safe</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Hackathon Feature</div>
+    <div class="legend-item" style="margin-left:auto;font-size:11px;color:var(--muted)">All services 100% free · OSM · Supabase · FCM · Gemini</div>
+  </div>
+
+</div>
+</body>
+</html>
